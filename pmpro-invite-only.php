@@ -687,26 +687,35 @@ add_filter('the_content', 'pmproio_the_content_account_page', 20, 1);
 /*
 	Add invite code to confirmation emails.
 */
-function pmproio_pmpro_email_body($body, $email)
-{
-	if(strpos($email->template, "checkout") !== false && strpos($email->template, "debug") === false)
-	{
-		$user = get_user_by("login", $email->data['user_login']);
-		$codes = get_user_meta($user->ID, "pmpro_invite_code", true);
-		if(!empty($codes))
-		{
-			$list = "";
-			foreach($codes as $code)
-			{
+function pmproio_pmpro_email_body( $body, $email ) {
+	if ( false !== strpos( $email->template, 'checkout' ) && false === strpos( $email->template, 'debug' ) ) {
+		// Bail if the checkout level does not give invite codes.
+		if ( ! pmproio_isInviteGivenLevel( $email->data['membership_id'] ) ) {
+			return $body;
+		}
+
+		$user  = get_user_by( 'login', $email->data['user_login'] );
+		$codes = get_user_meta( $user->ID, 'pmpro_invite_code', true );
+		if ( ! empty( $codes ) ) {
+			// Check if the checkout level requires approval.
+			if ( class_exists( 'PMPro_Approvals' ) && PMPro_Approvals::requiresApproval( $email->data['membership_id'] ) ) {
+				// Bail if the user is not approved for the checkout level.
+				if ( ! PMPro_Approvals::isApproved( $user->ID, $email->data['membership_id'] ) ) {
+					return $body;
+				}
+			}
+
+			$list = '';
+			foreach ( $codes as $code ) {
 				$list .= "{$code}<br>";
 			}
-			$body = str_replace("<p>Account:", "<p>Give these invite codes to others to use at checkout:<br><strong>{$list}</strong></p><p>Account:", $body);
+			$body = str_replace( '<p>Account:', "<p>Give these invite codes to others to use at checkout:<br><strong>{$list}</strong></p><p>Account:", $body );
 		}
 	}
 
 	return $body;
 }
-add_filter("pmpro_email_body", "pmproio_pmpro_email_body", 10, 2);
+add_filter( 'pmpro_email_body', 'pmproio_pmpro_email_body', 10, 2 );
 
 /*
 Function to add links to the plugin row meta
