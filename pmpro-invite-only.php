@@ -628,13 +628,16 @@ function pmproio_the_content_account_page( $content ) {
 	// Integrate with the Approvals Add On.
 	if ( class_exists( 'PMPro_Approvals' ) ) {
 		// Get user's levels and IDs of levels that require approval.
-		$user_levels = pmpro_getMembershipLevelsForUser( $current_user->ID );
+		$user_levels        = pmpro_getMembershipLevelsForUser( $current_user->ID );
 		$approval_level_ids = PMPro_Approvals::getApprovalLevels();
 
 		// Get user's levels that give invite codes.
-		$levels_to_check = array_filter( $user_levels, function( $level ) {
-			return pmproio_isInviteGivenLevel( $level->id );
-		} );
+		$levels_to_check = array_filter(
+			$user_levels,
+			function ( $level ) {
+				return pmproio_isInviteGivenLevel( $level->id );
+			}
+		);
 
 		// Check if any of the user's levels that give invite codes do not require approval.
 		// Or if the user is approved for any invite giver levels that require approval.
@@ -650,7 +653,7 @@ function pmproio_the_content_account_page( $content ) {
 		if ( ! $okay ) {
 			return $content;
 		}
-	}	
+	}
 
 	$title = 'Your Invite Code';
 	$text = 'Give this code to your invited member to use at checkout';
