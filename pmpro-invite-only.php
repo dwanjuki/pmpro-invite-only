@@ -11,6 +11,10 @@
  * License: GPL-3.0
  */
 
+define( 'PMPROIO_DIR', dirname( __FILE__ ) );
+
+require_once PMPROIO_DIR . '/includes/edit-member.php';
+
 /*
 	Set an array with the level ids which should require invite codes and generate them.
 
